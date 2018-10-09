@@ -1,0 +1,28 @@
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    regexp: '^%wheel'
+    state: present
+    validate: 'visudo -cf %s'
+
+- name: Add sudoers users to wheel group
+  user:
+    append: yes
+    createhome: yes
+    groups: wheel
+    name: "{{ item.name }}"
+    shell: /bin/bash
+    state: present
+  with_items: "{{ proxy_users }}"
+
+- name: Set up authorized keys for the aspace-emergency user
+  authorized_key:
+    key: "{{ lookup('file', '{{ item.pubkeyfile }}') }}"
+    user: "{{ item.name }}"
+  with_items: "{{ proxy_users }}"

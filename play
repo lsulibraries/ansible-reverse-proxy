@@ -1,0 +1,33 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  vars:
+  pre_tasks:
+  - name: Install python for Ansible
+    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+    changed_when: False
+
+  # Manually gather facts once python is installed
+  - name: gather facts
+    setup:
+  - include: self-sign.yml
+    when: self_sign
+  - include: prestage.yml
+  - include: create-admins.yml
+
+  roles:
+    - ansible-role-apache
+
+  post_tasks:
+  - name: Configure apache ssl params
+    template:
+      src: templates/ssl-params.conf.j2
+      dest: /etc/apache2/conf-available/ssl-params.conf
+
+  - name: Enable ssl-conf
+    command: a2enconf ssl-params
+
+  - service:
+      name: apache2
+      state: started

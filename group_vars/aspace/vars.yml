@@ -1,0 +1,24 @@
+apache_vhosts_ssl:
+  - servername: "{{ proxy_production_hostname }}"
+    serveradmin: "{{ proxy_apache_email }}"
+    certificate_file: "{{ proxy_cert_path }}/{{ proxy_cert_filename }}"
+    certificate_chain_file: "{{ proxy_cert_path }}/{{ proxy_chain_filename }}"
+    certificate_key_file: "{{ proxy_key_path }}/{{ proxy_key_filename }}"
+    extra_parameters: |
+      ProxyPass "/" "http://{{ proxy_production_backend_ip }}/"
+      ProxyPassReverse "/" "http://{{ proxy_production_backend_ip }}/"
+
+  - servername: "{{ proxy_test_hostname }}"
+    serveradmin: "{{ proxy_apache_email }}"
+    certificate_file: "{{ proxy_cert_path }}/{{ proxy_cert_filename }}"
+    certificate_chain_file: "{{ proxy_cert_path }}/{{ proxy_chain_filename }}"
+    certificate_key_file: "{{ proxy_key_path }}/{{ proxy_key_filename }}"
+    extra_parameters: |
+      ProxyPass "/" "http://{{ proxy_test_backend_ip }}/"
+      ProxyPassReverse "/" "http://{{ proxy_test_backend_ip }}/"
+
+self_sign: no
+
+proxy_users:
+  - name: aspace-emergency
+    pubkeyfile: files/aspace-emergency.pub

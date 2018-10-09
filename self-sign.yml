@@ -1,0 +1,23 @@
+  # https://www.jeffgeerling.com/blog/2017/generating-self-signed-openssl-certs-ansible-24s-crypto-modules
+- name: Generate an OpenSSL private key.
+  openssl_privatekey:
+    path: "files/{{ proxy_key_filename }}"
+  delegate_to: localhost
+  become: no
+
+- name: Generate an OpenSSL CSR.
+  openssl_csr:
+    path: files/request.csr
+    privatekey_path: "files/{{ proxy_key_filename }}"
+    common_name: "{{ proxy_production_hostname }}"
+  delegate_to: localhost
+  become: no
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: "files/{{ proxy_cert_filename }}"
+    privatekey_path: "files/{{ proxy_key_filename }}"
+    csr_path: files/request.csr
+    provider: selfsigned
+  delegate_to: localhost
+  become: no

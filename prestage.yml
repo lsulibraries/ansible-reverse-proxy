@@ -1,0 +1,25 @@
+- name: stop apache
+  service:
+    name: apache2
+    state: stopped
+  ignore_errors: yes
+
+- openssl_dhparam:
+    path: "{{ ansible_openssl_dhparam_path }}"
+    size: 2048
+
+- name: Copy cert
+  copy:
+    src: "files/{{ proxy_cert_filename }}"
+    dest: "{{ proxy_cert_path }}/{{ proxy_cert_filename }}"
+
+- name: Copy chain
+  copy:
+    src: "files/{{ proxy_chain_filename }}"
+    dest: "{{ proxy_cert_path }}/{{ proxy_chain_filename }}"
+  when: proxy_ssl_use_chain
+
+- name: Copy keys
+  copy:
+    src: "files/{{ proxy_key_filename }}"
+    dest: "{{ proxy_key_path }}/{{ proxy_key_filename }}"

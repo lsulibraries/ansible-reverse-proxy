@@ -1,0 +1,61 @@
+ansible_openssl_dhparam_path: /etc/ssl/certs/dhparam.pem
+
+apache_create_vhosts: true
+apache_vhosts_filename: "vhosts.conf"
+apache_remove_default_vhost: true
+
+apache_vhosts:
+  # Additional optional properties: 'serveradmin, serveralias, extra_parameters'.
+  - servername: "{{ proxy_production_hostname }}"
+    serveradmin: "{{ proxy_apache_email }}"
+    extra_parameters: |
+      Redirect "/" "https://{{ proxy_production_hostname }}"
+  - servername: "{{ proxy_test_hostname }}"
+    serveradmin: "{{ proxy_apache_email }}"
+    extra_parameters: |
+      Redirect "/" "https://{{ proxy_test_hostname }}"
+
+apache_vhosts_ssl:
+  - servername: "{{ proxy_production_hostname }}"
+    serveradmin: "{{ proxy_apache_email }}"
+    certificate_file: "{{ proxy_cert_path }}/{{ proxy_cert_filename }}"
+    certificate_key_file: "{{ proxy_key_path }}/{{ proxy_key_filename }}"
+    extra_parameters: |
+      ProxyPass "/" "http://{{ proxy_production_backend_ip }}/"
+      ProxyPassReverse "/" "http://{{ proxy_production_backend_ip }}/"
+
+  - servername: "{{ proxy_test_hostname }}"
+    serveradmin: "{{ proxy_apache_email }}"
+    certificate_file: "{{ proxy_cert_path }}/{{ proxy_cert_filename }}"
+    certificate_key_file: "{{ proxy_key_path }}/{{ proxy_key_filename }}"
+    extra_parameters: |
+      ProxyPass "/" "http://{{ proxy_test_backend_ip }}/"
+      ProxyPassReverse "/" "http://{{ proxy_test_backend_ip }}/"
+
+apache_mods_enabled:
+  - headers.load
+  - proxy_http.load
+  - proxy.load
+  - ssl.load
+  - socache_shmcb.load
+
+apache_state: stopped
+
+proxy_cert_filename: examplec.com.crt
+proxy_cert_path: /etc/ssl/certs
+proxy_chain_filename: examplec.com_chain.crt
+proxy_key_filename: examplec.com.key
+proxy_key_path: /etc/ssl/private
+
+proxy_apache_email: me@example.com
+proxy_production_backend_ip: 192.168.111.1
+proxy_production_hostname: prod.example.com
+proxy_ssl_use_chain: no
+proxy_test_backend_ip: 192.168.111.2
+proxy_test_hostname: test.example.com
+
+self_sign: yes
+
+proxy_users:
+  - name: superadmin
+    pubkeyfile: files/superadmin.pub
